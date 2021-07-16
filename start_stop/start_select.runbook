@@ -1,0 +1,29 @@
+# Start Azure Virtual Machines affiliated with SteelConnect-EX-Headend Resource Group
+# Cloudinspired.com https://www.cloudinspired.com/simple-stop-start-azure-vms-powershell/
+# Modified by cconlon@riverbed.com
+
+
+[string]$VmName="Analytics2,SteelConnect-EX_Analytics,SteelConnect-EX_Controller,SteelConnect-EX_Director,mars"
+[string]$ResourceGroupName="SteelConnect-EX-Headend"
+[string]$VmAction="Startup"
+
+
+# Login to Automation Account
+$Conn = Get-AutomationConnection -Name AzureRunAsConnection
+Add-AzureRMAccount -ServicePrincipal -Tenant $Conn.TenantID `
+-ApplicationID $Conn.ApplicationID -CertificateThumbprint $Conn.CertificateThumbprint | Out-Null
+ 
+# Startup Virtual Machines for example, VM01,VM02,VM03 etc
+$vms = $VmName.split(',')
+foreach($vm in $vms) {
+IF ($VmAction -eq "Startup") {
+    Start-AzureRmVM -Name $Vm -ResourceGroupName $ResourceGroupName | Out-Null
+    #Write-Output "VM $Vm in Resource Group $ResourceGroupName was started Successfully" 
+    $objOut = [PSCustomObject]@{
+    ResourceGroupName = $ResourceGroupName
+    VMName = $Vm
+    VMAction = $VmAction
+    }
+    Write-Output ( $objOut | ConvertTo-Json)
+    }
+}
